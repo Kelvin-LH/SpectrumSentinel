@@ -86,8 +86,11 @@ def analyze(
 
     model_path = None
     if model:
-        candidate = (MODEL_DIR / Path(model).name).resolve()
-        if candidate.parent != MODEL_DIR.resolve() or not candidate.is_file():
+        # Keep the user-controlled part to a basename so traversal is
+        # impossible, while allowing a trusted symlink in models/ to point at
+        # a large training output directory without copying the weight.
+        candidate = MODEL_DIR / Path(model).name
+        if not candidate.is_file():
             raise HTTPException(status_code=404, detail="所选模型不存在")
         model_path = candidate
 
