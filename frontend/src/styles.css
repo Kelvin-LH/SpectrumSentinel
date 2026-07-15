@@ -148,10 +148,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .frequency-axis b:first-child { transform: none; }
 .frequency-axis b:nth-last-child(2) { transform: translateX(0); }
 .frequency-axis > span { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); color: #9aafbd; font-size: 9px; letter-spacing: .08em; }
-.detection-box { position: absolute; min-width: 42px; border: 1px solid var(--amber); background: rgba(240, 171, 33, .025); box-shadow: inset 0 0 18px rgba(240, 171, 33, .02); cursor: pointer; padding: 0; transition: border-color .16s, background .16s, box-shadow .16s; }
-.detection-box > span { position: absolute; left: -1px; top: -22px; height: 21px; min-width: calc(100% + 2px); display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 0 6px; border: 1px solid var(--amber); background: #111a1f; color: var(--amber); font-size: 9px; font-weight: 600; white-space: nowrap; }
-.detection-box b { font-size: 8px; font-weight: 500; }
-.detection-box:hover, .detection-box.is-active { border-color: #ffd05b; background: rgba(240, 171, 33, .09); box-shadow: 0 0 18px rgba(240, 171, 33, .18), inset 0 0 20px rgba(240, 171, 33, .05); z-index: 2; }
+.detection-box { position: absolute; min-width: 42px; border: 2px solid #ffc238; background: rgba(240, 171, 33, .10); box-shadow: 0 0 9px rgba(255, 180, 27, .36), inset 0 0 18px rgba(240, 171, 33, .08); cursor: pointer; padding: 0; transition: border-color .16s, background .16s, box-shadow .16s; }
+.detection-label { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 58px; min-height: 38px; padding: 5px 9px; border: 1px solid rgba(255, 204, 86, .92); border-radius: 3px; background: rgba(3, 11, 18, .88); box-shadow: 0 2px 12px rgba(0, 0, 0, .58); color: #ffd45f; font-size: 11px; line-height: 1; white-space: nowrap; pointer-events: none; }
+.detection-label strong { color: #fff0b5; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-shadow: 0 1px 4px #000; }
+.detection-label b { color: #ffc238; font-size: 10px; font-weight: 600; }
+.detection-box:hover, .detection-box.is-active { border-color: #fff0a2; background: rgba(240, 171, 33, .18); box-shadow: 0 0 18px rgba(255, 194, 56, .72), inset 0 0 24px rgba(240, 171, 33, .14); z-index: 2; }
 .color-scale { display: flex; align-items: center; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 8px; }
 .color-scale i { width: 100px; height: 5px; background: linear-gradient(90deg, #020817, #06355f, #087f8c, #57e3c3, #f0c94c); }
 .color-scale small { font-size: 8px; }
@@ -227,7 +228,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
   .analysis-workspace { grid-template-rows: 500px 216px; }
   .waterfall-panel { padding-inline: 8px; }
   .waterfall-stage { grid-template-columns: 40px minmax(0, 1fr); }
-  .detection-box > span { top: -19px; height: 18px; max-width: 86px; overflow: hidden; }
+  .detection-label { min-width: 50px; min-height: 32px; padding: 4px 6px; gap: 2px; }
+  .detection-label strong { font-size: 10px; }
+  .detection-label b { font-size: 9px; }
   .timeline-track button { min-width: 52px; padding-inline: 4px; }
   .timeline-track, .timeline-scale { min-width: 620px; }
 }

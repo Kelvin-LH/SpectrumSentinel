@@ -71,7 +71,10 @@ function DetectionBox({ detection, active, onClick }: { detection: Detection; ac
       onClick={onClick}
       aria-label={`${detection.class_name}，置信度 ${Math.round(detection.confidence * 100)}%`}
     >
-      <span>{detection.class_name}<b>{detection.confidence.toFixed(2)}</b></span>
+      <span className="detection-label">
+        <strong>{detection.class_name}</strong>
+        <b>{detection.confidence.toFixed(2)}</b>
+      </span>
     </button>
   )
 }
