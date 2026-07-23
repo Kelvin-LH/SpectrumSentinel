@@ -12,8 +12,10 @@ from fastapi.staticfiles import StaticFiles
 
 from . import __version__
 from .analysis import analyse_h5
+from .image_analysis import analyse_image
 from .models import SUPPORTED_MODEL_SUFFIXES, scan_models, store_model
 from .preprocessing import COLORMAPS
+from .training_config import load_training_config
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 MODEL_DIR = Path(os.getenv("SPECTRUM_SENTINEL_MODEL_DIR", ROOT_DIR / "models"))
@@ -37,6 +39,11 @@ def health() -> dict:
 @app.get("/api/models")
 def models() -> dict:
     return {"models": scan_models(MODEL_DIR), "supported": sorted(SUPPORTED_MODEL_SUFFIXES)}
+
+
+@app.get("/api/runtime-config")
+def runtime_config() -> dict:
+    return {"preprocessing": load_training_config()}
 
 
 @app.post("/api/models")
@@ -71,6 +78,12 @@ def analyze(
     filename = file.filename or "sample.h5"
     if Path(filename).suffix.lower() not in {".h5", ".hdf5"}:
         raise HTTPException(status_code=400, detail="仅支持 H5/HDF5 文件")
+    # FFT settings are part of the training pipeline and are intentionally
+    # locked at inference time so the model sees the same representation.
+    training_config = load_training_config()
+    fft_size = int(training_config["fft_size"])
+    hop_length = int(training_config["hop_length"])
+    window = str(training_config["window"])
     if fft_size not in {256, 512, 1024, 2048, 4096}:
         raise HTTPException(status_code=400, detail="FFT 点数不支持")
     if hop_length <= 0 or hop_length > fft_size:
@@ -110,6 +123,35 @@ def analyze(
             confidence=confidence,
             remove_dc=remove_dc,
         ) | {"file_name": filename}
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
+@app.post("/api/predict-image")
+def predict_image(
+    file: UploadFile = File(...),
+    model: str = Form(""),
+    confidence: float = Form(0.25),
+) -> dict:
+    filename = file.filename or "sample.png"
+    if Path(filename).suffix.lower() not in {
+        ".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff"
+    }:
+        raise HTTPException(status_code=400, detail="仅支持 PNG、JPG、BMP、WEBP 或 TIFF 图片")
+    if not 0.01 <= confidence <= 0.99:
+        raise HTTPException(status_code=400, detail="置信度阈值范围为 0.01–0.99")
+    candidate = MODEL_DIR / Path(model).name if model else None
+    if candidate is None or not candidate.is_file():
+        raise HTTPException(status_code=404, detail="请先选择可用的检测模型")
+    with tempfile.NamedTemporaryFile(suffix=Path(filename).suffix, delete=False) as temporary:
+        shutil.copyfileobj(file.file, temporary)
+        temporary_path = Path(temporary.name)
+    try:
+        return analyse_image(temporary_path, model_path=candidate, confidence=confidence) | {
+            "file_name": filename
+        }
     except (OSError, RuntimeError, ValueError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     finally:

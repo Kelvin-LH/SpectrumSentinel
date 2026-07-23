@@ -1,4 +1,4 @@
-import type { AnalysisResult, ModelInfo, PreprocessSettings } from '../types'
+import type { AnalysisResult, ModelInfo, PredictionResult, PreprocessSettings, RuntimeConfig } from '../types'
 
 async function readError(response: Response): Promise<string> {
   try {
@@ -23,6 +23,12 @@ export async function uploadModel(file: File): Promise<ModelInfo[]> {
   return (await response.json()).models
 }
 
+export async function getRuntimeConfig(): Promise<RuntimeConfig> {
+  const response = await fetch('/api/runtime-config')
+  if (!response.ok) throw new Error(await readError(response))
+  return (await response.json()).preprocessing
+}
+
 export async function analyze(
   file: File,
   model: string,
@@ -42,4 +48,22 @@ export async function analyze(
   const response = await fetch('/api/analyze', { method: 'POST', body })
   if (!response.ok) throw new Error(await readError(response))
   return response.json()
+}
+
+export async function predictImage(file: File, model: string, confidence: number): Promise<PredictionResult> {
+  const body = new FormData()
+  body.append('file', file)
+  body.append('model', model)
+  body.append('confidence', String(confidence))
+  const response = await fetch('/api/predict-image', { method: 'POST', body })
+  if (!response.ok) throw new Error(await readError(response))
+  const data = await response.json()
+  return {
+    file_name: data.file_name,
+    input_type: 'image',
+    model: data.model,
+    predictions: data.predictions ?? [],
+    image_width: data.image_width,
+    image_height: data.image_height,
+  }
 }

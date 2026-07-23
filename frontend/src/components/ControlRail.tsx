@@ -1,6 +1,6 @@
 import { ChangeEvent, DragEvent, useRef, useState } from 'react'
-import { Cpu, FileUp, Play, RotateCcw, UploadCloud } from 'lucide-react'
-import type { ModelInfo, PreprocessSettings } from '../types'
+import { Cpu, FileUp, Play, UploadCloud } from 'lucide-react'
+import type { ModelInfo, PreprocessSettings, RuntimeConfig } from '../types'
 
 interface ControlRailProps {
   file: File | null
@@ -11,10 +11,10 @@ interface ControlRailProps {
   error: string
   onFile: (file: File) => void
   onModel: (value: string) => void
+  runtimeConfig: RuntimeConfig | null
   onSettings: (settings: PreprocessSettings) => void
   onAnalyze: () => void
   onModelUpload: (file: File) => void
-  onResetDemo: () => void
 }
 
 function humanSize(bytes: number): string {
@@ -25,13 +25,13 @@ function humanSize(bytes: number): string {
 }
 
 export function ControlRail(props: ControlRailProps) {
-  const { file, models, model, settings, busy, error } = props
+  const { file, models, model, settings, busy, error, runtimeConfig } = props
   const fileInput = useRef<HTMLInputElement>(null)
   const modelInput = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
 
   const acceptFile = (candidate?: File) => {
-    if (candidate && /\.h(df)?5$/i.test(candidate.name)) props.onFile(candidate)
+    if (candidate && /\.(h(df)?5|png|jpe?g|bmp|webp|tiff?)$/i.test(candidate.name)) props.onFile(candidate)
   }
   const drop = (event: DragEvent) => {
     event.preventDefault()
@@ -44,7 +44,7 @@ export function ControlRail(props: ControlRailProps) {
   return (
     <aside className="control-rail">
       <section className="rail-section">
-        <div className="section-title"><span>01</span><h2>H5 数据源</h2></div>
+        <div className="section-title"><span>01</span><h2>输入数据</h2></div>
         <button
           className={`drop-zone ${dragging ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}
           onClick={() => fileInput.current?.click()}
@@ -53,25 +53,15 @@ export function ControlRail(props: ControlRailProps) {
           onDrop={drop}
         >
           <UploadCloud size={23} />
-          {file ? <><strong>{file.name}</strong><small>{humanSize(file.size)} · 点击替换</small></> : <><strong>拖入 H5 样本</strong><small>或点击浏览本地文件</small></>}
+          {file ? <><strong>{file.name}</strong><small>{humanSize(file.size)} · 点击替换</small></> : <><strong>拖入 H5 或图片</strong><small>支持 H5、PNG、JPG 等格式</small></>}
         </button>
-        <input ref={fileInput} className="sr-only" type="file" accept=".h5,.hdf5" onChange={(event) => acceptFile(event.target.files?.[0])} />
-        <div className="limit-note"><span>演示限制</span><strong>固定截取前 2,000 时间帧</strong></div>
+        <input ref={fileInput} className="sr-only" type="file" accept=".h5,.hdf5,.png,.jpg,.jpeg,.bmp,.webp,.tif,.tiff" onChange={(event) => acceptFile(event.target.files?.[0])} />
+        <div className="limit-note"><span>输入规范</span><strong>{runtimeConfig ? `H5 固定截取前 ${runtimeConfig.frame_limit.toLocaleString()} 帧` : 'H5 固定截取前 2,000 帧'}</strong></div>
       </section>
 
       <section className="rail-section">
-        <div className="section-title"><span>02</span><h2>预处理方式</h2></div>
-        <label>FFT 点数<select value={settings.fftSize} onChange={(event) => update('fftSize', Number(event.target.value))}>{[256, 512, 1024, 2048, 4096].map((value) => <option key={value}>{value}</option>)}</select></label>
-        <div className="two-fields">
-          <label>帧步长<input type="number" min="1" max={settings.fftSize} value={settings.hopLength} onChange={(event) => update('hopLength', Number(event.target.value))} /></label>
-          <label>窗函数<select value={settings.window} onChange={(event) => update('window', event.target.value)}><option value="hann">Hann</option><option value="hamming">Hamming</option><option value="blackman">Blackman</option></select></label>
-        </div>
-        <label>色彩映射<select value={settings.colorMap} onChange={(event) => update('colorMap', event.target.value)}><option value="ocean">深海青</option><option value="viridis">Viridis</option><option value="turbo">Turbo</option><option value="gray">灰度</option></select></label>
-        <div className="two-fields">
-          <label>最低 dB<input type="number" value={settings.dbMin} onChange={(event) => update('dbMin', Number(event.target.value))} /></label>
-          <label>最高 dB<input type="number" value={settings.dbMax} onChange={(event) => update('dbMax', Number(event.target.value))} /></label>
-        </div>
-        <label className="check-row"><input type="checkbox" checked={settings.removeDc} onChange={(event) => update('removeDc', event.target.checked)} /><span>抑制直流分量</span></label>
+        <div className="section-title"><span>02</span><h2>训练预处理</h2></div>
+        <div className="locked-config"><span>识别参数跟随训练配置</span><strong>FFT {runtimeConfig?.fft_size ?? settings.fftSize} · 步长 {runtimeConfig?.hop_length ?? settings.hopLength}</strong><small>{runtimeConfig?.window?.toUpperCase() ?? 'HANN'} 窗 · 输入 {runtimeConfig?.imgsz ?? 640}px</small></div>
       </section>
 
       <section className="rail-section model-section">
@@ -86,7 +76,6 @@ export function ControlRail(props: ControlRailProps) {
       {error && <div className="error-message" role="alert">{error}</div>}
       <div className="rail-actions">
         <button className="primary-button" disabled={!file || busy} onClick={props.onAnalyze}>{busy ? <><Cpu className="spin" size={17} />正在解析</> : <><Play size={17} fill="currentColor" />开始解析</>}</button>
-        <button className="ghost-button" onClick={props.onResetDemo}><RotateCcw size={14} />恢复展台示例</button>
       </div>
     </aside>
   )

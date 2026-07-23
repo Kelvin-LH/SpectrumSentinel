@@ -61,3 +61,29 @@ export interface PreprocessSettings {
   removeDc: boolean
   confidence: number
 }
+
+export interface Prediction {
+  class_id: number
+  class_name: string
+  confidence: number
+}
+
+export interface PredictionResult {
+  file_name: string
+  input_type: 'h5' | 'image'
+  model: string | null
+  predictions: Prediction[]
+  metadata?: SignalMetadata
+  image_width?: number
+  image_height?: number
+}
+
+export interface RuntimeConfig {
+  fft_size: number
+  hop_length: number
+  window: string
+  frame_limit: number
+  imgsz: number
+  model: string
+  source: string
+}
