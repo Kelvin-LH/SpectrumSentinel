@@ -3,11 +3,11 @@ import { BrandMark } from './BrandMark'
 
 interface HeaderProps {
   fileName: string
-  frames: number
+  inputType: string
   modelName: string | null
 }
 
-export function Header({ fileName, frames, modelName }: HeaderProps) {
+export function Header({ fileName, inputType, modelName }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="brand">
@@ -23,7 +23,7 @@ export function Header({ fileName, frames, modelName }: HeaderProps) {
         </div>
         <div className="status-item">
           <span className="status-icon"><CheckCircle2 size={17} /></span>
-          <div><small>解析范围</small><strong>{frames ? `${frames.toLocaleString()} 帧` : '前 2,000 帧'}</strong></div>
+          <div><small>输入类型</small><strong>{inputType || '等待识别'}</strong></div>
         </div>
         <div className="status-item model-status">
           <div><small>当前模型</small><strong>{modelName || '尚未选择'}</strong></div>

@@ -56,7 +56,6 @@ export function ControlRail(props: ControlRailProps) {
           {file ? <><strong>{file.name}</strong><small>{humanSize(file.size)} · 点击替换</small></> : <><strong>拖入 H5 或图片</strong><small>支持 H5、PNG、JPG 等格式</small></>}
         </button>
         <input ref={fileInput} className="sr-only" type="file" accept=".h5,.hdf5,.png,.jpg,.jpeg,.bmp,.webp,.tif,.tiff" onChange={(event) => acceptFile(event.target.files?.[0])} />
-        <div className="limit-note"><span>输入规范</span><strong>{runtimeConfig ? `H5 固定截取前 ${runtimeConfig.frame_limit.toLocaleString()} 帧` : 'H5 固定截取前 2,000 帧'}</strong></div>
       </section>
 
       <section className="rail-section">

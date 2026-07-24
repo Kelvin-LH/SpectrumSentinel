@@ -74,6 +74,8 @@ export interface PredictionResult {
   model: string | null
   predictions: Prediction[]
   metadata?: SignalMetadata
+  detections?: Detection[]
+  input_size_bytes?: number
   image_width?: number
   image_height?: number
 }

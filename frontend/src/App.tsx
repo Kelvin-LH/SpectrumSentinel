@@ -28,10 +28,10 @@ export default function App() {
     try {
       const isImage = /\.(png|jpe?g|bmp|webp|tiff?)$/i.test(file.name)
       let next: PredictionResult
-      if (isImage) next = await predictImage(file, model, settings.confidence)
+      if (isImage) next = { ...await predictImage(file, model, settings.confidence), input_size_bytes: file.size }
       else {
         const analysed = await analyze(file, model, { ...settings, fftSize: runtimeConfig?.fft_size ?? settings.fftSize, hopLength: runtimeConfig?.hop_length ?? settings.hopLength, window: runtimeConfig?.window ?? settings.window })
-        next = { file_name: analysed.file_name, input_type: 'h5', model: analysed.model, metadata: analysed.metadata, predictions: analysed.detections.map((item) => ({ class_id: item.class_id, class_name: item.class_name, confidence: item.confidence })) }
+        next = { file_name: analysed.file_name, input_type: 'h5', model: analysed.model, metadata: analysed.metadata, detections: analysed.detections, input_size_bytes: file.size, predictions: analysed.detections.map((item) => ({ class_id: item.class_id, class_name: item.class_name, confidence: item.confidence })) }
       }
       setResult(next)
     } catch (cause) { setError(cause instanceof Error ? cause.message : '解析失败') } finally { setBusy(false) }
@@ -43,7 +43,7 @@ export default function App() {
   }
 
   return <div className="app-shell">
-    <Header fileName={file?.name || result?.file_name || ''} frames={result?.metadata?.processed_frames ?? 0} modelName={model || result?.model || null} />
+    <Header fileName={file?.name || result?.file_name || ''} inputType={result?.input_type || (file ? (/\.(h(df)?5)$/i.test(file.name) ? 'H5' : '图片') : '')} modelName={model || result?.model || null} />
     <main className="dashboard-layout">
       <ControlRail file={file} models={models} model={model} settings={settings} runtimeConfig={runtimeConfig} busy={busy} error={error} onFile={setFile} onModel={setModel} onSettings={setSettings} onAnalyze={runAnalysis} onModelUpload={importModel} />
       <div className="analysis-workspace"><ResultPanel result={result} busy={busy} /></div>
