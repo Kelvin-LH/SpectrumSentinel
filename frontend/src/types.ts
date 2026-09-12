@@ -78,6 +78,9 @@ export interface PredictionResult {
   input_size_bytes?: number
   image_width?: number
   image_height?: number
+  image?: string
+  orientation?: 'vertical_time'
+  preprocessing?: Record<string, string | number | boolean>
 }
 
 export interface RuntimeConfig {

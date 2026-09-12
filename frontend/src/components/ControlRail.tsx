@@ -15,6 +15,7 @@ interface ControlRailProps {
   onSettings: (settings: PreprocessSettings) => void
   onAnalyze: () => void
   onModelUpload: (file: File) => void
+  onResetShowcase: () => void
 }
 
 function humanSize(bytes: number): string {
@@ -75,6 +76,7 @@ export function ControlRail(props: ControlRailProps) {
       {error && <div className="error-message" role="alert">{error}</div>}
       <div className="rail-actions">
         <button className="primary-button" disabled={!file || busy} onClick={props.onAnalyze}>{busy ? <><Cpu className="spin" size={17} />正在解析</> : <><Play size={17} fill="currentColor" />开始解析</>}</button>
+        <button className="ghost-button" onClick={props.onResetShowcase}>返回产品展台</button>
       </div>
     </aside>
   )

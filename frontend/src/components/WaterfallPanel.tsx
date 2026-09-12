@@ -7,6 +7,7 @@ interface WaterfallPanelProps {
   selected: number | null
   onSelect: (id: number) => void
   busy: boolean
+  showcase?: boolean
 }
 
 function drawDemo(canvas: HTMLCanvasElement) {
@@ -79,7 +80,7 @@ function DetectionBox({ detection, active, onClick }: { detection: Detection; ac
   )
 }
 
-export function WaterfallPanel({ result, selected, onSelect, busy }: WaterfallPanelProps) {
+export function WaterfallPanel({ result, selected, onSelect, busy, showcase = false }: WaterfallPanelProps) {
   const canvas = useRef<HTMLCanvasElement>(null)
   useEffect(() => { if (!result.image && canvas.current) drawDemo(canvas.current) }, [result.image])
   const low = result.metadata.frequency_low_hz / 1e6
@@ -90,12 +91,12 @@ export function WaterfallPanel({ result, selected, onSelect, busy }: WaterfallPa
   return (
     <section className="waterfall-panel">
       <div className="panel-heading">
-        <div><ScanLine size={17} /><h2>垂直瀑布图</h2><span>时间向下流动</span></div>
+        <div><ScanLine size={17} /><h2>垂直瀑布图</h2><span>{showcase ? '产品展台 · 自动巡检' : '时间向下流动'}</span></div>
         <div className="canvas-tools"><button title="定位选中目标"><Crosshair size={15} /></button><button title="全屏展示"><Maximize2 size={15} /></button></div>
       </div>
       <div className={`waterfall-stage ${busy ? 'is-busy' : ''}`}>
         <div className="time-axis"><span>时间 / 帧</span>{frameTicks.map((value) => <b key={value} style={{ top: `${value / Math.max(result.metadata.processed_frames, 1) * 100}%` }}>{value}</b>)}</div>
-        <div className="waterfall-image">
+        <div className={`waterfall-image ${showcase ? 'is-showcase' : ''}`}>
           {result.image ? <img src={result.image} alt="H5 信号垂直瀑布图" /> : <canvas ref={canvas} aria-label="展台示例垂直瀑布图" />}
           <div className="technical-grid" />
           {result.detections.map((detection) => <DetectionBox key={detection.id} detection={detection} active={selected === detection.id} onClick={() => onSelect(detection.id)} />)}
