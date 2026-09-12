@@ -1,0 +1,16 @@
+[Unit]
+Description=Spectrum Sentinel product showcase
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kelvin/apps/spectrum-sentinel-current
+Environment=PYTHONPATH=/home/kelvin/apps/spectrum-sentinel-current/.python:/home/kelvin/apps/spectrum-sentinel-current/backend
+Environment=SPECTRUM_SENTINEL_MODEL_DIR=/home/kelvin/.local/share/spectrum-sentinel/models
+ExecStart=/usr/bin/python3 -m uvicorn spectrum_sentinel.app:app --app-dir backend --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
